@@ -1,5 +1,5 @@
-import time
-from typing import Optional, List
+import os, time, datetime
+from typing import Optional, List, Union
 from RPA.Browser.Selenium import Selenium
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -67,7 +67,7 @@ class RPABuilder:
         except Exception as e:
             raise Exception(f"Elements not found: {locator} - {e}")
 
-    def enter_text(self, locator: str, text: str, clear_before_enter: bool = True, timeout: int = 15):
+    def enter_text(self, locator: str, text: any, clear_before_enter: bool = True, timeout: int = 15):
         """
         Enters text into a web element.
         Args:
@@ -86,7 +86,7 @@ class RPABuilder:
         except Exception as e:
             raise Exception(f"Failed to enter text into {locator}: {e}")
 
-    def enter_text_with_delay(self, locator: str, text: str, delay: float = 0.1, clear_before_enter: bool = True, timeout: int = 15):
+    def enter_text_with_delay(self, locator: str, text: any, delay: float = 0.1, clear_before_enter: bool = True, timeout: int = 15):
         """
         Enters text into a web element with a delay between each character.
       
@@ -160,17 +160,21 @@ class RPABuilder:
         except Exception as e:
             raise Exception(f"Failed to click element {locator}: {e}")
 
-    def take_screenshot(self, filename: str = "screenshot.png"):
+    def take_screenshot(self, filename: str = None, dir: str = "screenshot"):
         """
         Takes a screenshot of the current page.
 
         Args:
-            filename: The name of the file to save the screenshot to (default: "screenshot.png").
+            filename: The name of the file to save the screenshot to (default: timestamp-based name).
+            dir: The directory to save the screenshot (default: "screenshot").
         Raises:
             Exception: If there is an error taking the screenshot.
         """
         try:
-            self.browser.capture_page_screenshot(filename)
+            os.makedirs(dir, exist_ok=True)
+            filename = filename or datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S") + ".png"
+
+            self.browser.capture_page_screenshot(os.path.join(dir, filename))
         except Exception as e:
             raise Exception(f"Failed to take screenshot: {e}")
 
@@ -251,7 +255,7 @@ class RPABuilder:
             else:
                 raise Exception(f"Element {locator} is not interactable")
         except Exception as e:
-            raise  # Re-raise the caught exception
+            raise
 
     def wait_for_load(self, locator: str, timeout: int = 15):
         """
@@ -267,6 +271,31 @@ class RPABuilder:
             self.browser.wait_until_page_contains_element(locator, timeout=timeout)
         except Exception as e:
             raise Exception(f"Page did not load within {timeout} seconds: {e}")
+
+    def upload_file(self, locator: str, file_path: str):
+        """
+        Uploads a file to the specified element.
+
+        Args:
+            locator: The locator of the element where the file should be uploaded.
+            file_path: The path to the file to be uploaded.
+
+        Raises:
+            Exception: If there is an error during the file upload.
+        """
+        try:
+            self.browser.choose_file(locator, file_path)
+        except Exception as e:
+            raise Exception(f"Failed to choose file: {e}")
+
+    def switch_iframe(self, locator, switch_to_default: bool = False):
+        try:
+            if switch_to_default:
+                self.browser.driver.switch_to.default_content()
+                return
+            self.browser.driver.switch_to.frame(locator)
+        except Exception as e:
+            raise Exception(f"Failed to switch the iframe using locator : {locator}\nTraceback : {e}")
 
     def wait(self, duration: float = 0.5):
         """
