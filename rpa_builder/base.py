@@ -1,5 +1,5 @@
 import os, time, datetime
-from typing import Optional, List, Union
+from typing import Optional, List
 from RPA.Browser.Selenium import Selenium
 from selenium.webdriver.remote.webelement import WebElement
 
