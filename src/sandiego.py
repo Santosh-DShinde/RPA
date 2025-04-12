@@ -1,9 +1,10 @@
-import json, sys, os
+import os, sys, json
 from RPA.Browser.Selenium import Selenium
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from rpa_builder.base import RPABuilder
 from config.loggings import get_logger
+
 
 class SandiegoRPA(RPABuilder):
     def __init__(self, conf_path: str, timeout: int=15):
@@ -48,11 +49,21 @@ class SandiegoRPA(RPABuilder):
         except Exception as e:
             raise Exception(f"Main Exeption:{str(e)}\nTraceback: {str(e.__traceback__)}")
 
+    def create_application(self):
+        try:
+            self.logger.info("Started creating application")
+            self.wait(3)
+            self.click_element("xpath://a[contains(text(), 'Create an Application')]", 10)
+
+        except Exception as e:
+            raise Exception(f"Main Exeption:{str(e)}\nTraceback: {str(e.__traceback__)}")
+
 def main():
     try:
         manager = SandiegoRPA("data/sandiego.json")
         manager.login()
         manager.initiate_application()
+        manager.create_application()
 
     except Exception as e:
         raise Exception(f"Main Exeption:{str(e)}\nTraceback: {str(e.__traceback__)}")
